@@ -1,9 +1,8 @@
 document.addEventListener('DOMContentLoaded', (event) => {
-    // Key for local storage
     const LOCAL_STORAGE_KEY = 'todoListTasks';
 
-    // Initial tasks data 
-    let tasks = loadTasks(); 
+    // Initialize with empty tasks array 
+    let tasks = [];
 
     // Save tasks to local storage
     function saveTasks() {
@@ -17,6 +16,12 @@ document.addEventListener('DOMContentLoaded', (event) => {
             { id: 1, name: 'Finish the project by Tuesday at 1pm', status: 'pending' }
         ];
     }
+
+    // Restore tasks from localStorage 
+    window.restoreTasks = function() {
+        tasks = loadTasks();
+        renderTasks();
+    };
 
     // Render tasks in the table
     window.renderTasks = function() {
@@ -104,8 +109,15 @@ document.addEventListener('DOMContentLoaded', (event) => {
         const taskName = newTaskInput.value.trim();
 
         if (taskName) {
-            const newId = tasks.length > 0 ? Math.max(...tasks.map(t => t.id)) + 1 : 1;
-            tasks.push({ id: newId, name: taskName, status: 'pending' });
+            if (tasks.length === 0) {
+                const storedTasks = loadTasks();
+                const newId = storedTasks.length > 0 ? Math.max(...storedTasks.map(t => t.id)) + 1 : 1;
+                tasks.push({ id: newId, name: taskName, status: 'pending' });
+            } else {
+                const newId = Math.max(...tasks.map(t => t.id)) + 1;
+                tasks.push({ id: newId, name: taskName, status: 'pending' });
+            }
+            
             newTaskInput.value = '';
             saveTasks(); 
             renderTasks();
@@ -124,7 +136,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         }
     };
 
-    // Mark task'Completed'
+    // Mark task as 'Completed'
     window.markAsCompleted = function(id) {
         const taskIndex = tasks.findIndex(task => task.id === id);
         if (taskIndex !== -1) {
@@ -142,6 +154,13 @@ document.addEventListener('DOMContentLoaded', (event) => {
             saveTasks(); 
             renderTasks();
         }
+    };
+
+    // Function to clear localStorage data
+    window.clearStoredTasks = function() {
+        localStorage.removeItem(LOCAL_STORAGE_KEY);
+        tasks = [];
+        renderTasks();
     };
 
     // Initial render when the page loads
